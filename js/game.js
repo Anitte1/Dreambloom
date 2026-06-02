@@ -346,58 +346,82 @@ class Game {
 
   drawMenu() {
     const ctx = this.ctx;
-    ctx.fillStyle = '#1a1a2e';
+
+    const map = MAP_TYPES[this.mapIdx];
+    const bg = Assets['bg_' + map.name];
+    if (bg) {
+      ctx.drawImage(bg, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    } else {
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    }
+
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
-    ctx.fillStyle = '#e74c3c';
-    ctx.font = 'bold 56px monospace';
+    ctx.fillStyle = '#ff6b6b';
+    ctx.font = 'bold 60px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('DUNGEON DODGE', CANVAS_WIDTH / 2, 100);
+    ctx.shadowColor = 'rgba(0,0,0,0.8)';
+    ctx.shadowBlur = 12;
+    ctx.fillText('⚔ DUNGEON DODGE ⚔', CANVAS_WIDTH / 2, 85);
+    ctx.shadowBlur = 0;
 
-    ctx.fillStyle = '#888';
-    ctx.font = '18px monospace';
-    ctx.fillText('Выберите персонажей и нажмите PLAY', CANVAS_WIDTH / 2, 140);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = '16px monospace';
+    ctx.fillText('Выберите персонажей, карту и нажмите PLAY', CANVAS_WIDTH / 2, 120);
+
+    const panelW = 280;
+    const panelH = 130;
+    const panelGap = 30;
+    const panelY = 150;
+    const panel1X = CANVAS_WIDTH / 2 - panelGap / 2 - panelW;
+    const panel2X = CANVAS_WIDTH / 2 + panelGap / 2;
 
     this.charButtons = [];
     for (let p = 0; p < 2; p++) {
       const isP1 = p === 0;
-      const label = isP1 ? 'P1 — Стрелки' : 'P2 — WASD';
+      const label = isP1 ? 'P1  [←→↑↓]' : 'P2  [WASD]';
       const color = isP1 ? '#4fc3f7' : '#81c784';
       const idxKey = isP1 ? 'charIdx1' : 'charIdx2';
       const idx = this[idxKey];
       const charDef = CHARACTER_TYPES[idx];
-      const baseY = 170 + p * 140;
+      const px = isP1 ? panel1X : panel2X;
+
+      ctx.fillStyle = 'rgba(20,20,40,0.8)';
+      ctx.fillRect(px, panelY, panelW, panelH);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(px, panelY, panelW, panelH);
 
       ctx.fillStyle = color;
-      ctx.font = 'bold 20px monospace';
-      ctx.fillText(label, CANVAS_WIDTH / 2, baseY);
+      ctx.font = 'bold 16px monospace';
+      ctx.fillText(label, px + panelW / 2, panelY + 22);
 
-      const portraitSize = 64;
-      const portraitX = CANVAS_WIDTH / 2 - portraitSize / 2;
-      const portraitY = baseY + 12;
+      const portraitSize = 60;
+      const portraitX = px + panelW / 2 - portraitSize / 2;
+      const portraitY = panelY + 32;
       const stand = Assets[charDef.id + '_stand'];
       if (stand) {
         ctx.drawImage(stand, portraitX, portraitY, portraitSize, portraitSize);
       }
 
       ctx.fillStyle = '#fff';
-      ctx.font = '16px monospace';
-      ctx.fillText(charDef.name, CANVAS_WIDTH / 2, portraitY + portraitSize + 18);
+      ctx.font = '14px monospace';
+      ctx.fillText(charDef.name, px + panelW / 2, portraitY + portraitSize + 16);
 
-      const arrowSize = 36;
+      const arrowSize = 30;
       const arrowY = portraitY + portraitSize / 2 - arrowSize / 2;
-      const leftX = portraitX - 50;
-      const rightX = portraitX + portraitSize + 14;
+      const leftX = px + 10;
+      const rightX = px + panelW - 10 - arrowSize;
 
-      ctx.fillStyle = '#555';
+      ctx.fillStyle = 'rgba(255,255,255,0.15)';
       ctx.fillRect(leftX, arrowY, arrowSize, arrowSize);
       ctx.fillRect(rightX, arrowY, arrowSize, arrowSize);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 24px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText('<', leftX + arrowSize / 2, arrowY + arrowSize - 8);
-      ctx.fillText('>', rightX + arrowSize / 2, arrowY + arrowSize - 8);
-      ctx.textAlign = 'center';
+      ctx.fillStyle = color;
+      ctx.font = 'bold 20px monospace';
+      ctx.fillText('<', leftX + arrowSize / 2, arrowY + arrowSize - 7);
+      ctx.fillText('>', rightX + arrowSize / 2, arrowY + arrowSize - 7);
 
       this.charButtons.push(
         { player: p, dir: -1, x: leftX, y: arrowY, w: arrowSize, h: arrowSize },
@@ -405,38 +429,49 @@ class Game {
       );
     }
 
-    ctx.fillStyle = '#ffcc00';
-    ctx.font = 'bold 18px monospace';
-    ctx.fillText('MAP: ' + MAP_TYPES[this.mapIdx].name, CANVAS_WIDTH / 2, 445);
+    const mapY = panelY + panelH + 20;
+    ctx.fillStyle = 'rgba(20,20,40,0.8)';
+    ctx.fillRect(CANVAS_WIDTH / 2 - 130, mapY, 260, 40);
+    ctx.strokeStyle = '#ffcc00';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(CANVAS_WIDTH / 2 - 130, mapY, 260, 40);
 
-    const mapArrowSize = 32;
-    const mapArrowY = 430;
-    const mapLeftX = CANVAS_WIDTH / 2 - 90;
-    const mapRightX = CANVAS_WIDTH / 2 + 70;
-    ctx.fillStyle = '#555';
-    ctx.fillRect(mapLeftX, mapArrowY, mapArrowSize, mapArrowSize);
-    ctx.fillRect(mapRightX, mapArrowY, mapArrowSize, mapArrowSize);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 22px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('<', mapLeftX + mapArrowSize / 2, mapArrowY + mapArrowSize - 7);
-    ctx.fillText('>', mapRightX + mapArrowSize / 2, mapArrowY + mapArrowSize - 7);
+    ctx.fillStyle = '#ffcc00';
+    ctx.font = 'bold 16px monospace';
+    ctx.fillText('MAP: ' + map.name, CANVAS_WIDTH / 2, mapY + 26);
+
+    const mapArrowSize = 30;
+    const mapArrowY2 = mapY + 5;
+    const mapLeftX = CANVAS_WIDTH / 2 - 120;
+    const mapRightX = CANVAS_WIDTH / 2 + 90;
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(mapLeftX, mapArrowY2, mapArrowSize, mapArrowSize);
+    ctx.fillRect(mapRightX, mapArrowY2, mapArrowSize, mapArrowSize);
+    ctx.fillStyle = '#ffcc00';
+    ctx.font = 'bold 20px monospace';
+    ctx.fillText('<', mapLeftX + mapArrowSize / 2, mapArrowY2 + mapArrowSize - 7);
+    ctx.fillText('>', mapRightX + mapArrowSize / 2, mapArrowY2 + mapArrowSize - 7);
 
     this.mapButtons = [
-      { dir: -1, x: mapLeftX, y: mapArrowY, w: mapArrowSize, h: mapArrowSize },
-      { dir: 1, x: mapRightX, y: mapArrowY, w: mapArrowSize, h: mapArrowSize },
+      { dir: -1, x: mapLeftX, y: mapArrowY2, w: mapArrowSize, h: mapArrowSize },
+      { dir: 1, x: mapRightX, y: mapArrowY2, w: mapArrowSize, h: mapArrowSize },
     ];
 
-    const bx = CANVAS_WIDTH / 2 - 100;
-    const by = 460;
-    const bw = 200;
-    const bh = 56;
-    ctx.fillStyle = '#27ae60';
+    const bx = CANVAS_WIDTH / 2 - 90;
+    const by = mapY + 60;
+    const bw = 180;
+    const bh = 48;
+    ctx.fillStyle = '#e74c3c';
     ctx.fillRect(bx, by, bw, bh);
+    ctx.strokeStyle = '#ff6b6b';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(bx, by, bw, bh);
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 28px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillText('PLAY', CANVAS_WIDTH / 2, by + 38);
+    ctx.font = 'bold 24px monospace';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 6;
+    ctx.fillText('PLAY', CANVAS_WIDTH / 2, by + 33);
+    ctx.shadowBlur = 0;
 
     this.playBtn = { x: bx, y: by, w: bw, h: bh };
   }
