@@ -25,6 +25,13 @@ async function init() {
   Assets.background = await loadImage(BACKGROUND_PATH);
   Assets.floorTile = await loadImage(FLOOR_TILE_PATH);
 
+  Assets.lifeIcon = await loadImage(LIFE_ICON_PATH);
+  Assets.starIcon = await loadImage(STAR_ICON_PATH);
+
+  for (const d of [...BACKGROUND_DECORATIONS, ...FLOOR_DECORATIONS]) {
+    Assets[d.key] = await loadImage(d.path);
+  }
+
   for (const t of ENEMY_TYPES) {
     Assets[t.id] = await loadImage(t.path);
     Assets[t.id + 'Anim'] = await loadImage(t.animPath);

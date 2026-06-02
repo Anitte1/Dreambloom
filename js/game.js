@@ -1,11 +1,35 @@
+class Coin {
+  constructor() {
+    this.width = 28;
+    this.height = 28;
+    this.x = 40 + Math.random() * (CANVAS_WIDTH - 80 - this.width);
+    this.y = -this.height;
+    this.speed = 1.5;
+  }
+
+  update() {
+    this.y += this.speed;
+  }
+
+  draw(ctx) {
+    if (Assets.starIcon) {
+      ctx.drawImage(Assets.starIcon, this.x, this.y, this.width, this.height);
+    }
+  }
+
+  isOffScreen() {
+    return this.y > CANVAS_HEIGHT + 30;
+  }
+}
+
 class Player {
   constructor(canvasWidth, canvasHeight) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
-    this.width = 64;
-    this.height = 64;
+    this.width = 80;
+    this.height = 80;
     this.x = canvasWidth / 2 - this.width / 2;
-    this.y = canvasHeight - this.height - 10;
+    this.y = canvasHeight - FLOOR_HEIGHT - this.height / 2;
     this.speed = PLAYER_SPEED;
     this.animFrame = 0;
     this.animTimer = 0;
@@ -13,45 +37,63 @@ class Player {
     this.state = 'idle';
     this.jumpTimer = 0;
     this.prevUp = false;
+    this.lives = MAX_LIVES;
+    this.invulnerableTimer = 0;
   }
 
   reset() {
     this.x = this.canvasWidth / 2 - this.width / 2;
-    this.y = this.canvasHeight - this.height - 10;
+    this.y = this.canvasHeight - FLOOR_HEIGHT - this.height / 2;
     this.state = 'idle';
     this.animFrame = 0;
     this.animTimer = 0;
     this.jumpTimer = 0;
     this.prevUp = false;
+    this.lives = MAX_LIVES;
+    this.invulnerableTimer = 0;
+  }
+
+  hit() {
+    if (this.invulnerableTimer > 0) return false;
+    this.lives--;
+    this.state = 'hurt';
+    this.invulnerableTimer = INVULNERABLE_DURATION;
+    return this.lives <= 0;
   }
 
   update(keys) {
-    const moving = keys.left || keys.right || keys.up || keys.down;
+    const moving = keys.left || keys.right || keys.down;
 
     if (keys.left) this.x -= this.speed;
     if (keys.right) this.x += this.speed;
-    if (keys.up) this.y -= this.speed;
     if (keys.down) this.y += this.speed;
 
+    this.y = Math.min(this.y, this.canvasHeight - FLOOR_HEIGHT - this.height / 2);
+
     if (this.x < 0) this.x = 0;
-    if (this.y < 0) this.y = 0;
     if (this.x + this.width > this.canvasWidth) this.x = this.canvasWidth - this.width;
-    if (this.y + this.height > this.canvasHeight) this.y = this.canvasHeight - this.height;
 
     if (keys.up && !this.prevUp) {
       this.jumpTimer = 8;
     }
     this.prevUp = keys.up;
 
+    if (this.invulnerableTimer > 0) {
+      this.invulnerableTimer--;
+      if (this.invulnerableTimer === 0 && this.state === 'hurt') {
+        this.state = 'idle';
+      }
+    }
+
     if (this.jumpTimer > 0) {
       this.state = 'jump';
       this.jumpTimer--;
     } else if (!moving) {
-      this.state = 'idle';
+      if (this.invulnerableTimer === 0) this.state = 'idle';
       this.animFrame = 0;
       this.animTimer = 0;
     } else {
-      this.state = 'run';
+      if (this.invulnerableTimer === 0) this.state = 'run';
       this.animTimer++;
       if (this.animTimer >= this.animSpeed) {
         this.animTimer = 0;
@@ -61,6 +103,8 @@ class Player {
   }
 
   draw(ctx) {
+    if (this.invulnerableTimer > 0 && Math.floor(this.invulnerableTimer / 4) % 2 === 0) return;
+
     let sprite;
     switch (this.state) {
       case 'hurt':
@@ -90,30 +134,77 @@ class Game {
     this.backgroundImage = null;
     this.floorTileImage = null;
     this.enemies = [];
+    this.coins = [];
     this.spawnTimer = 0;
+    this.coinSpawnTimer = 0;
     this.state = 'playing';
     this.score = 0;
+    this.bgDecos = [];
+    this.floorDecos = [];
+    this.generateDecorations();
+  }
+
+  generateDecorations() {
+    for (let i = 0; i < DECO_COUNT_BG; i++) {
+      const def = BACKGROUND_DECORATIONS[i % BACKGROUND_DECORATIONS.length];
+      const size = def.minSize + Math.random() * (def.maxSize - def.minSize);
+      this.bgDecos.push({
+        key: def.key,
+        x: Math.random() * CANVAS_WIDTH,
+        y: 20 + Math.random() * 180,
+        w: size,
+        h: size * 0.6,
+      });
+    }
+
+    const grassTop = CANVAS_HEIGHT - FLOOR_HEIGHT;
+    for (let i = 0; i < DECO_COUNT_FLOOR; i++) {
+      const def = FLOOR_DECORATIONS[i % FLOOR_DECORATIONS.length];
+      let x, y, w, h;
+      if (def.grow) {
+        w = def.size;
+        h = def.size * 1.4;
+        x = Math.random() * (CANVAS_WIDTH - w);
+        y = grassTop - h + 10;
+      } else {
+        w = def.size;
+        h = def.size;
+        x = Math.random() * (CANVAS_WIDTH - w);
+        y = grassTop + 10 + Math.random() * (FLOOR_HEIGHT - w - 10);
+      }
+      this.floorDecos.push({ key: def.key, x, y, w, h });
+    }
   }
 
   restart() {
     this.player.reset();
     this.enemies = [];
+    this.coins = [];
     this.spawnTimer = 0;
+    this.coinSpawnTimer = 0;
     this.score = 0;
     this.state = 'playing';
+    this.bgDecos = [];
+    this.floorDecos = [];
+    this.generateDecorations();
   }
 
   update() {
     if (this.state === 'gameover') return;
 
     this.player.update(this.keys);
-    this.score++;
 
     this.spawnTimer++;
     if (this.spawnTimer >= SPAWN_INTERVAL_MS / 16) {
       this.spawnTimer = 0;
       const type = ENEMY_TYPES[Math.floor(Math.random() * ENEMY_TYPES.length)];
       this.enemies.push(new Enemy(type));
+    }
+
+    this.coinSpawnTimer++;
+    if (this.coinSpawnTimer >= COIN_SPAWN_INTERVAL_MS / 16) {
+      this.coinSpawnTimer = 0;
+      this.coins.push(new Coin());
     }
 
     for (let i = this.enemies.length - 1; i >= 0; i--) {
@@ -123,17 +214,62 @@ class Game {
       }
     }
 
+    for (let i = this.coins.length - 1; i >= 0; i--) {
+      this.coins[i].update();
+      if (this.coins[i].isOffScreen()) {
+        this.coins.splice(i, 1);
+      }
+    }
+
     const p = this.player;
-    for (const e of this.enemies) {
+    for (let i = this.enemies.length - 1; i >= 0; i--) {
+      const e = this.enemies[i];
       if (
         p.x + 8 < e.x + e.width - 8 &&
         p.x + p.width - 8 > e.x + 8 &&
         p.y + 8 < e.y + e.height - 8 &&
         p.y + p.height - 8 > e.y + 8
       ) {
-        this.player.state = 'hurt';
-        this.state = 'gameover';
+        if (p.hit()) {
+          this.state = 'gameover';
+        }
+        this.enemies.splice(i, 1);
         break;
+      }
+    }
+
+    for (let i = this.coins.length - 1; i >= 0; i--) {
+      const c = this.coins[i];
+      if (
+        p.x < c.x + c.width &&
+        p.x + p.width > c.x &&
+        p.y < c.y + c.height &&
+        p.y + p.height > c.y
+      ) {
+        this.score++;
+        this.coins.splice(i, 1);
+      }
+    }
+  }
+
+  drawHud(ctx) {
+    const iconSize = 24;
+    const pad = 16;
+    let cursorX = pad;
+
+    if (Assets.starIcon) {
+      ctx.drawImage(Assets.starIcon, cursorX, 12, iconSize, iconSize);
+      cursorX += iconSize + 6;
+    }
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 24px monospace';
+    ctx.fillText(this.score, cursorX, 36);
+    cursorX += ctx.measureText(String(this.score)).width + 20;
+
+    if (Assets.lifeIcon) {
+      for (let i = 0; i < this.player.lives; i++) {
+        ctx.drawImage(Assets.lifeIcon, cursorX, 12, iconSize, iconSize);
+        cursorX += iconSize + 4;
       }
     }
   }
@@ -148,11 +284,29 @@ class Game {
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
     }
 
+    for (const d of this.bgDecos) {
+      if (Assets[d.key]) {
+        ctx.drawImage(Assets[d.key], d.x, d.y, d.w, d.h);
+      }
+    }
+
     if (this.floorTileImage) {
       const floorY = CANVAS_HEIGHT - FLOOR_HEIGHT;
-      for (let x = 0; x < CANVAS_WIDTH; x += this.floorTileImage.width) {
-        ctx.drawImage(this.floorTileImage, x, floorY, this.floorTileImage.width, FLOOR_HEIGHT);
+      const tileW = this.floorTileImage.width;
+      const tilesNeeded = Math.ceil(CANVAS_WIDTH / tileW);
+      for (let i = 0; i < tilesNeeded; i++) {
+        ctx.drawImage(this.floorTileImage, i * tileW, floorY, tileW, FLOOR_HEIGHT);
       }
+    }
+
+    for (const d of this.floorDecos) {
+      if (Assets[d.key]) {
+        ctx.drawImage(Assets[d.key], d.x, d.y, d.w, d.h);
+      }
+    }
+
+    for (const c of this.coins) {
+      c.draw(ctx);
     }
 
     this.player.draw(ctx);
@@ -161,9 +315,7 @@ class Game {
       e.draw(ctx);
     }
 
-    ctx.fillStyle = '#fff';
-    ctx.font = '24px monospace';
-    ctx.fillText('Score: ' + Math.floor(this.score / 60), 20, 40);
+    this.drawHud(ctx);
 
     if (this.state === 'gameover') {
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
@@ -172,15 +324,16 @@ class Game {
       ctx.fillStyle = '#e74c3c';
       ctx.font = 'bold 64px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('GAME OVER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 40);
+      ctx.fillText('GAME OVER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 50);
 
+      const totalScore = this.score;
       ctx.fillStyle = '#fff';
       ctx.font = '32px monospace';
-      ctx.fillText('Score: ' + Math.floor(this.score / 60), CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 30);
+      ctx.fillText('Score: ' + totalScore, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
 
       ctx.font = '20px monospace';
       ctx.fillStyle = '#aaa';
-      ctx.fillText('Press R or click to restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 90);
+      ctx.fillText('Press R or click to restart', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 80);
 
       ctx.textAlign = 'left';
     }
