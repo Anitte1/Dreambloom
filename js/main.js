@@ -55,18 +55,18 @@ async function init() {
   const game = new Game(canvas);
   SoundManager.startMusic();
 
+  const KEY_MAP = {
+    'ArrowLeft':  [1, 'left'], 'ArrowRight': [1, 'right'], 'ArrowUp': [1, 'up'], 'ArrowDown': [1, 'down'],
+    'a': [2, 'left'], 'A': [2, 'left'], 'd': [2, 'right'], 'D': [2, 'right'],
+    'w': [2, 'up'], 'W': [2, 'up'], 's': [2, 'down'], 'S': [2, 'down'],
+  };
+
   function handleKey(e, state) {
-    const key = e.key;
-    switch (key) {
-      case 'ArrowLeft': e.preventDefault(); game.setKey(1, 'left', state); break;
-      case 'ArrowRight': e.preventDefault(); game.setKey(1, 'right', state); break;
-      case 'ArrowUp': e.preventDefault(); game.setKey(1, 'up', state); break;
-      case 'ArrowDown': e.preventDefault(); game.setKey(1, 'down', state); break;
-      case 'a': case 'A': e.preventDefault(); game.setKey(2, 'left', state); break;
-      case 'd': case 'D': e.preventDefault(); game.setKey(2, 'right', state); break;
-      case 'w': case 'W': e.preventDefault(); game.setKey(2, 'up', state); break;
-      case 's': case 'S': e.preventDefault(); game.setKey(2, 'down', state); break;
-    }
+    const mapping = KEY_MAP[e.key];
+    if (!mapping) return;
+    const [player, dir] = mapping;
+    if (player === 1) e.preventDefault();
+    game.setKey(player, dir, state);
   }
 
   document.addEventListener('keydown', (e) => {
