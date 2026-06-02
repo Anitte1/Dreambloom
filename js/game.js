@@ -139,9 +139,28 @@ class Game {
     this.coinSpawnTimer = 0;
     this.state = 'playing';
     this.score = 0;
+    this.elapsedFrames = 0;
     this.bgDecos = [];
     this.floorDecos = [];
     this.generateDecorations();
+  }
+
+  getDifficultyLevel() {
+    return Math.min(
+      Math.floor(this.elapsedFrames / DIFFICULTY_STEP_FRAMES),
+      MAX_DIFFICULTY_LEVEL
+    );
+  }
+
+  getSpawnInterval() {
+    const level = this.getDifficultyLevel();
+    const interval = SPAWN_INTERVAL_MS - level * 100;
+    return Math.max(interval, MIN_SPAWN_INTERVAL_MS);
+  }
+
+  getSpeedMultiplier() {
+    const level = this.getDifficultyLevel();
+    return 1 + level * 0.2;
   }
 
   generateDecorations() {
@@ -183,6 +202,7 @@ class Game {
     this.spawnTimer = 0;
     this.coinSpawnTimer = 0;
     this.score = 0;
+    this.elapsedFrames = 0;
     this.state = 'playing';
     this.bgDecos = [];
     this.floorDecos = [];
@@ -193,12 +213,14 @@ class Game {
     if (this.state === 'gameover') return;
 
     this.player.update(this.keys);
+    this.elapsedFrames++;
 
     this.spawnTimer++;
-    if (this.spawnTimer >= SPAWN_INTERVAL_MS / 16) {
+    const currentSpawnInterval = this.getSpawnInterval() / 16;
+    if (this.spawnTimer >= currentSpawnInterval) {
       this.spawnTimer = 0;
       const type = ENEMY_TYPES[Math.floor(Math.random() * ENEMY_TYPES.length)];
-      this.enemies.push(new Enemy(type));
+      this.enemies.push(new Enemy(type, this.getSpeedMultiplier()));
     }
 
     this.coinSpawnTimer++;
@@ -272,6 +294,12 @@ class Game {
         cursorX += iconSize + 4;
       }
     }
+
+    ctx.fillStyle = '#ffcc00';
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('Lv.' + this.getDifficultyLevel(), CANVAS_WIDTH - pad, 32);
+    ctx.textAlign = 'left';
   }
 
   draw() {

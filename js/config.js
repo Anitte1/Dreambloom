@@ -1,8 +1,10 @@
 const CANVAS_WIDTH = 1280;
 const CANVAS_HEIGHT = 720;
 const PLAYER_SPEED = 7;
-const ENEMY_BASE_SPEED = 3;
 const SPAWN_INTERVAL_MS = 1500;
+const MIN_SPAWN_INTERVAL_MS = 500;
+const DIFFICULTY_STEP_FRAMES = 600;
+const MAX_DIFFICULTY_LEVEL = 10;
 
 const PLAYER_STAND_PATH = 'assets/kenney_platformer-characters/PNG/Adventurer/Poses/adventurer_stand.png';
 const PLAYER_WALK1_PATH = 'assets/kenney_platformer-characters/PNG/Adventurer/Poses/adventurer_walk1.png';

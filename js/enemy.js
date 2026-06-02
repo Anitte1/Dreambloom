@@ -1,11 +1,11 @@
 class Enemy {
-  constructor(typeDef) {
+  constructor(typeDef, speedMultiplier = 1) {
     this.typeDef = typeDef;
     this.width = typeDef.width;
     this.height = typeDef.height;
     this.x = Math.random() * (CANVAS_WIDTH - this.width);
     this.y = -this.height;
-    this.speed = typeDef.speed;
+    this.speed = typeDef.speed * speedMultiplier;
     this.animFrame = 0;
     this.animTimer = 0;
     this.animSpeed = 15;
