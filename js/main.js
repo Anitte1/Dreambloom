@@ -55,24 +55,29 @@ async function init() {
   const game = new Game(canvas);
   SoundManager.startMusic();
 
-  function handleKey(e, state) {
-    const k = e.key;
-    if (k === 'ArrowLeft') { e.preventDefault(); game.setKey(1, 'left', state); }
-    else if (k === 'ArrowRight') { e.preventDefault(); game.setKey(1, 'right', state); }
-    else if (k === 'ArrowUp') { e.preventDefault(); game.setKey(1, 'up', state); }
-    else if (k === 'ArrowDown') { e.preventDefault(); game.setKey(1, 'down', state); }
-    else if (k === 'w' || k === 'W') { game.setKey(2, 'up', state); }
-    else if (k === 'a' || k === 'A') { game.setKey(2, 'left', state); }
-    else if (k === 's' || k === 'S') { game.setKey(2, 'down', state); }
-    else if (k === 'd' || k === 'D') { game.setKey(2, 'right', state); }
-  }
-
   document.addEventListener('keydown', (e) => {
-    handleKey(e, true);
+    const k = e.key;
+    console.log('keydown:', k);
+    if (k === 'ArrowLeft') { e.preventDefault(); game.setKey(1, 'left', true); }
+    else if (k === 'ArrowRight') { e.preventDefault(); game.setKey(1, 'right', true); }
+    else if (k === 'ArrowUp') { e.preventDefault(); game.setKey(1, 'up', true); }
+    else if (k === 'ArrowDown') { e.preventDefault(); game.setKey(1, 'down', true); }
+    else if (k === 'w' || k === 'W') { console.log('→ P2 up'); game.setKey(2, 'up', true); }
+    else if (k === 'a' || k === 'A') { console.log('→ P2 left'); game.setKey(2, 'left', true); }
+    else if (k === 's' || k === 'S') { console.log('→ P2 down'); game.setKey(2, 'down', true); }
+    else if (k === 'd' || k === 'D') { console.log('→ P2 right'); game.setKey(2, 'right', true); }
   });
 
   document.addEventListener('keyup', (e) => {
-    handleKey(e, false);
+    const k = e.key;
+    if (k === 'ArrowLeft') { e.preventDefault(); game.setKey(1, 'left', false); }
+    else if (k === 'ArrowRight') { e.preventDefault(); game.setKey(1, 'right', false); }
+    else if (k === 'ArrowUp') { e.preventDefault(); game.setKey(1, 'up', false); }
+    else if (k === 'ArrowDown') { e.preventDefault(); game.setKey(1, 'down', false); }
+    else if (k === 'w' || k === 'W') { game.setKey(2, 'up', false); }
+    else if (k === 'a' || k === 'A') { game.setKey(2, 'left', false); }
+    else if (k === 's' || k === 'S') { game.setKey(2, 'down', false); }
+    else if (k === 'd' || k === 'D') { game.setKey(2, 'right', false); }
     if (e.key === 'r' || e.key === 'R') {
       if (game.state === 'gameover') game.restart();
     }
@@ -150,5 +155,6 @@ async function init() {
 
   gameLoop();
 }
+init().catch(e => console.error('init error:', e));
+window.addEventListener('error', (e) => console.error('GLOBAL:', e.message));
 
-init();
