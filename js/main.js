@@ -55,15 +55,16 @@ async function init() {
   const game = new Game(canvas);
 
   function handleKey(e, state) {
-    switch (e.key) {
+    const key = e.key;
+    switch (key) {
       case 'ArrowLeft': e.preventDefault(); game.setKey(1, 'left', state); break;
       case 'ArrowRight': e.preventDefault(); game.setKey(1, 'right', state); break;
       case 'ArrowUp': e.preventDefault(); game.setKey(1, 'up', state); break;
       case 'ArrowDown': e.preventDefault(); game.setKey(1, 'down', state); break;
-      case 'a': game.setKey(2, 'left', state); break;
-      case 'd': game.setKey(2, 'right', state); break;
-      case 'w': game.setKey(2, 'up', state); break;
-      case 's': game.setKey(2, 'down', state); break;
+      case 'a': case 'A': e.preventDefault(); game.setKey(2, 'left', state); break;
+      case 'd': case 'D': e.preventDefault(); game.setKey(2, 'right', state); break;
+      case 'w': case 'W': e.preventDefault(); game.setKey(2, 'up', state); break;
+      case 's': case 'S': e.preventDefault(); game.setKey(2, 'down', state); break;
     }
   }
 

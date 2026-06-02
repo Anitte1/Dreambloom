@@ -142,7 +142,8 @@ class Game {
     this.mapIdx = 0;
     this.player1 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx1].id);
     this.player2 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx2].id);
-    this.player2.x = canvas.width / 2 + this.player2.width / 2 + 20;
+    this.player2.x = canvas.width / 2 - this.player2.width / 2 - 150;
+    this.player2.y = canvas.height - FLOOR_HEIGHT - this.player2.height / 2 + 5;
     this.keysP1 = { left: false, right: false, up: false, down: false };
     this.keysP2 = { left: false, right: false, up: false, down: false };
     this.backgroundImage = null;
@@ -217,7 +218,8 @@ class Game {
   restart() {
     this.player1.reset();
     this.player2.reset();
-    this.player2.x += 40;
+    this.player2.x = this.player2.canvasWidth / 2 - this.player2.width / 2 - 200;
+    this.player2.y = this.player2.canvasHeight - FLOOR_HEIGHT - this.player2.height / 2 + 5;
     this.enemies = [];
     this.coins = [];
     this.spawnTimer = 0;
@@ -525,6 +527,13 @@ class Game {
 
     this.player1.draw(ctx);
     this.player2.draw(ctx);
+
+    ctx.font = 'bold 12px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#4fc3f7';
+    ctx.fillText('P1', this.player1.x + this.player1.width / 2, this.player1.y - 6);
+    ctx.fillStyle = '#81c784';
+    ctx.fillText('P2', this.player2.x + this.player2.width / 2, this.player2.y - 6);
 
     for (const e of this.enemies) {
       e.draw(ctx);
