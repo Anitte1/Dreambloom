@@ -42,6 +42,7 @@ class Player {
     this.lives = MAX_LIVES;
     this.invulnerableTimer = 0;
     this.score = 0;
+    this.dead = false;
   }
 
   reset() {
@@ -55,6 +56,7 @@ class Player {
     this.lives = MAX_LIVES;
     this.invulnerableTimer = 0;
     this.score = 0;
+    this.dead = false;
   }
 
   hit() {
@@ -63,11 +65,15 @@ class Player {
     this.state = 'hurt';
     this.invulnerableTimer = INVULNERABLE_DURATION;
     SoundManager.play('playerHit');
-    if (this.lives <= 0) SoundManager.play('death');
+    if (this.lives <= 0) {
+      this.dead = true;
+      SoundManager.play('death');
+    }
     return this.lives <= 0;
   }
 
   update(keys) {
+    if (this.dead) return;
     const moving = keys.left || keys.right || keys.down;
 
     if (keys.left) this.x -= this.speed;
@@ -110,6 +116,7 @@ class Player {
   }
 
   draw(ctx) {
+    if (this.dead) return;
     if (this.invulnerableTimer > 0 && Math.floor(this.invulnerableTimer / 4) % 2 === 0) return;
 
     const c = this.characterId;
@@ -158,6 +165,7 @@ class Game {
     this.elapsedFrames = 0;
     this.bgDecos = [];
     this.floorDecos = [];
+    this.deathMessages = [];
     this.generateDecorations();
   }
 
@@ -229,6 +237,7 @@ class Game {
     this.state = 'playing';
     this.bgDecos = [];
     this.floorDecos = [];
+    this.deathMessages = [];
     this.generateDecorations();
   }
 
@@ -278,6 +287,11 @@ class Game {
           p.y + p.height - 8 > e.y + 8
         ) {
           if (p.hit()) {
+            this.deathMessages.push({
+              text: p.name + ' has fallen!',
+              timer: 120,
+              color: p === this.player1 ? '#4fc3f7' : '#81c784',
+            });
             if (this.player1.lives <= 0 && this.player2.lives <= 0) {
               this.state = 'gameover';
               SoundManager.play('gameOver');
@@ -286,6 +300,13 @@ class Game {
           this.enemies.splice(i, 1);
           break;
         }
+      }
+    }
+
+    for (let i = this.deathMessages.length - 1; i >= 0; i--) {
+      this.deathMessages[i].timer--;
+      if (this.deathMessages[i].timer <= 0) {
+        this.deathMessages.splice(i, 1);
       }
     }
 
@@ -558,12 +579,26 @@ class Game {
     this.player1.draw(ctx);
     this.player2.draw(ctx);
 
-    ctx.font = 'bold 11px monospace';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#4fc3f7';
-    ctx.fillText(this.player1.name, this.player1.x + this.player1.width / 2, this.player1.y - 6);
-    ctx.fillStyle = '#81c784';
-    ctx.fillText(this.player2.name, this.player2.x + this.player2.width / 2, this.player2.y - 6);
+    for (const msg of this.deathMessages) {
+      const alpha = msg.timer > 30 ? 1 : msg.timer / 30;
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = msg.color;
+      ctx.font = 'bold 32px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(msg.text, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 3);
+      ctx.textAlign = 'left';
+    }
+    ctx.globalAlpha = 1;
+
+    const drawName = (player, color) => {
+      if (player.dead) return;
+      ctx.fillStyle = color;
+      ctx.font = 'bold 11px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(player.name, player.x + player.width / 2, player.y - 6);
+    };
+    drawName(this.player1, '#4fc3f7');
+    drawName(this.player2, '#81c784');
 
     for (const e of this.enemies) {
       e.draw(ctx);
