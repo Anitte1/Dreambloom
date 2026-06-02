@@ -332,36 +332,60 @@ class Game {
   drawHud(ctx) {
     const iconSize = 20;
     const pad = 16;
+    const barHeight = 36;
+    const centerY = barHeight / 2;
 
-    const drawPlayerHud = (player, label, color, x) => {
-      let cx = x;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, 0, CANVAS_WIDTH, barHeight);
+
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, barHeight);
+    ctx.lineTo(CANVAS_WIDTH, barHeight);
+    ctx.stroke();
+
+    const drawSection = (player, label, color, startX) => {
+      let x = startX;
+
       if (Assets.starIcon) {
-        ctx.drawImage(Assets.starIcon, cx, 2, iconSize, iconSize);
-        cx += iconSize + 4;
+        ctx.drawImage(Assets.starIcon, x, centerY - iconSize / 2, iconSize, iconSize);
+        x += iconSize + 4;
       }
       ctx.fillStyle = color;
-      ctx.font = 'bold 16px monospace';
-      ctx.fillText(label + ' ' + player.score, cx, 18);
-      cx += ctx.measureText(label + ' ' + player.score).width + 8;
+      ctx.font = 'bold 14px monospace';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(String(player.score), x, centerY);
+      x += ctx.measureText(String(player.score)).width + 10;
 
       if (Assets.lifeIcon) {
         for (let i = 0; i < player.lives; i++) {
-          ctx.drawImage(Assets.lifeIcon, cx, 2, iconSize, iconSize);
-          cx += iconSize + 3;
+          ctx.drawImage(Assets.lifeIcon, x, centerY - iconSize / 2, iconSize, iconSize);
+          x += iconSize + 2;
         }
       }
+
+      x += 6;
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 13px monospace';
+      ctx.fillText(label, x, centerY);
     };
 
     const name1 = this.player1.name.length > 8 ? this.player1.name.slice(0, 8) + '..' : this.player1.name;
+    drawSection(this.player1, name1, '#4fc3f7', pad);
+
     const name2 = this.player2.name.length > 8 ? this.player2.name.slice(0, 8) + '..' : this.player2.name;
-    drawPlayerHud(this.player1, name1, '#4fc3f7', pad);
-    drawPlayerHud(this.player2, name2, '#81c784', CANVAS_WIDTH / 2 + pad);
+    drawSection(this.player2, name2, '#81c784', CANVAS_WIDTH / 2 + pad);
 
     ctx.fillStyle = '#ffcc00';
-    ctx.font = '14px monospace';
+    ctx.font = 'bold 13px monospace';
     ctx.textAlign = 'right';
-    ctx.fillText('Lv.' + this.getDifficultyLevel(), CANVAS_WIDTH - pad, 18);
+    ctx.textBaseline = 'middle';
+    ctx.fillText('Lv.' + this.getDifficultyLevel(), CANVAS_WIDTH - pad, centerY);
+
     ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
   }
 
   drawMenu() {
