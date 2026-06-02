@@ -17,6 +17,7 @@ function loadImage(src) {
 }
 
 async function init() {
+  await SoundManager.init();
   Assets.playerStand = await loadImage(PLAYER_STAND_PATH);
   Assets.playerWalk1 = await loadImage(PLAYER_WALK1_PATH);
   Assets.playerWalk2 = await loadImage(PLAYER_WALK2_PATH);
@@ -72,6 +73,9 @@ async function init() {
     }
     if (e.key === 'Enter' || e.key === ' ') {
       if (game.state === 'menu') game.startGame();
+    }
+    if (e.key === 'm' || e.key === 'M') {
+      SoundManager.toggleMute();
     }
   });
 

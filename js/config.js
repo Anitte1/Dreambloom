@@ -45,6 +45,47 @@ const FLOOR_DECORATIONS = [
 const DECO_COUNT_BG = 5;
 const DECO_COUNT_FLOOR = 15;
 
+const SOUND_PATHS = {
+  menuClick: 'assets/kenney_ui-pack/Sounds/click-a.ogg',
+  jump: 'assets/kenney_ui-pack/Sounds/click-b.ogg',
+  starCollect: 'assets/kenney_ui-pack/Sounds/tap-a.ogg',
+  playerHit: 'assets/kenney_ui-pack/Sounds/tap-b.ogg',
+  gameOver: 'assets/kenney_ui-pack/Sounds/switch-a.ogg',
+  death: 'assets/kenney_ui-pack/Sounds/switch-b.ogg',
+};
+
+const SoundManager = {
+  _muted: false,
+  _sounds: {},
+
+  async init() {
+    const entries = Object.entries(SOUND_PATHS);
+    const results = await Promise.allSettled(entries.map(async ([key, path]) => {
+      const audio = new Audio(path);
+      audio.volume = 0.5;
+      audio.load();
+      SoundManager._sounds[key] = audio;
+    }));
+    const failed = results.filter(r => r.status === 'rejected');
+    if (failed.length) console.warn('Sounds failed to load:', failed.length);
+  },
+
+  play(name) {
+    if (SoundManager._muted) return;
+    const audio = SoundManager._sounds[name];
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+  },
+
+  toggleMute() {
+    SoundManager._muted = !SoundManager._muted;
+    return SoundManager._muted;
+  },
+
+  get isMuted() { return SoundManager._muted; },
+};
+
 const BACKGROUND_PATH = 'assets/kenney_background-elements-remastered/Backgrounds/backgroundForest.png';
 const FLOOR_TILE_PATH = 'assets/kenney_hexagon-tiles/Tiles/tileGrass.png';
 const FLOOR_HEIGHT = 80;

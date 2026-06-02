@@ -58,6 +58,8 @@ class Player {
     this.lives--;
     this.state = 'hurt';
     this.invulnerableTimer = INVULNERABLE_DURATION;
+    SoundManager.play('playerHit');
+    if (this.lives <= 0) SoundManager.play('death');
     return this.lives <= 0;
   }
 
@@ -75,6 +77,7 @@ class Player {
 
     if (keys.up && !this.prevUp) {
       this.jumpTimer = 8;
+      SoundManager.play('jump');
     }
     this.prevUp = keys.up;
 
@@ -254,6 +257,7 @@ class Game {
       ) {
         if (p.hit()) {
           this.state = 'gameover';
+          SoundManager.play('gameOver');
         }
         this.enemies.splice(i, 1);
         break;
@@ -269,6 +273,7 @@ class Game {
         p.y + p.height > c.y
       ) {
         this.score++;
+        SoundManager.play('starCollect');
         this.coins.splice(i, 1);
       }
     }
@@ -298,7 +303,11 @@ class Game {
     ctx.fillStyle = '#ffcc00';
     ctx.font = '16px monospace';
     ctx.textAlign = 'right';
-    ctx.fillText('Lv.' + this.getDifficultyLevel(), CANVAS_WIDTH - pad, 32);
+    ctx.fillText('Lv.' + this.getDifficultyLevel(), CANVAS_WIDTH - pad * 2 - 60, 32);
+
+    ctx.fillStyle = SoundManager.isMuted ? '#666' : '#aaa';
+    ctx.font = '22px monospace';
+    ctx.fillText(SoundManager.isMuted ? '[M] OFF' : '[M] ON', CANVAS_WIDTH - pad, 32);
     ctx.textAlign = 'left';
   }
 
@@ -339,6 +348,7 @@ class Game {
   }
 
   startGame() {
+    SoundManager.play('menuClick');
     this.restart();
     this.state = 'playing';
   }
