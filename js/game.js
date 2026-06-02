@@ -308,24 +308,24 @@ class Game {
   }
 
   drawHud(ctx) {
-    const iconSize = 24;
+    const iconSize = 20;
     const pad = 16;
 
     const drawPlayerHud = (player, label, color, x) => {
       let cx = x;
       if (Assets.starIcon) {
-        ctx.drawImage(Assets.starIcon, cx, 12, iconSize, iconSize);
-        cx += iconSize + 6;
+        ctx.drawImage(Assets.starIcon, cx, 2, iconSize, iconSize);
+        cx += iconSize + 4;
       }
       ctx.fillStyle = color;
-      ctx.font = 'bold 20px monospace';
-      ctx.fillText(label + ' ' + player.score, cx, 32);
-      cx += ctx.measureText(label + ' ' + player.score).width + 12;
+      ctx.font = 'bold 16px monospace';
+      ctx.fillText(label + ' ' + player.score, cx, 18);
+      cx += ctx.measureText(label + ' ' + player.score).width + 8;
 
       if (Assets.lifeIcon) {
         for (let i = 0; i < player.lives; i++) {
-          ctx.drawImage(Assets.lifeIcon, cx, 12, iconSize, iconSize);
-          cx += iconSize + 4;
+          ctx.drawImage(Assets.lifeIcon, cx, 2, iconSize, iconSize);
+          cx += iconSize + 3;
         }
       }
     };
@@ -334,13 +334,9 @@ class Game {
     drawPlayerHud(this.player2, 'P2', '#81c784', CANVAS_WIDTH / 2 + pad);
 
     ctx.fillStyle = '#ffcc00';
-    ctx.font = '16px monospace';
+    ctx.font = '14px monospace';
     ctx.textAlign = 'right';
-    ctx.fillText('Lv.' + this.getDifficultyLevel(), CANVAS_WIDTH - pad * 2 - 60, 32);
-
-    ctx.fillStyle = SoundManager.isMuted ? '#666' : '#aaa';
-    ctx.font = '22px monospace';
-    ctx.fillText(SoundManager.isMuted ? '[M] OFF' : '[M] ON', CANVAS_WIDTH - pad, 32);
+    ctx.fillText('Lv.' + this.getDifficultyLevel(), CANVAS_WIDTH - pad, 18);
     ctx.textAlign = 'left';
   }
 
@@ -474,6 +470,23 @@ class Game {
     ctx.shadowBlur = 0;
 
     this.playBtn = { x: bx, y: by, w: bw, h: bh };
+
+    const muted = SoundManager.isMuted;
+    const mx = CANVAS_WIDTH - 120;
+    const my = by + bh + 20;
+    const mw = 100;
+    const mh = 34;
+    ctx.fillStyle = muted ? 'rgba(100,100,100,0.5)' : 'rgba(255,255,255,0.15)';
+    ctx.fillRect(mx, my, mw, mh);
+    ctx.strokeStyle = muted ? '#666' : '#aaa';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(mx, my, mw, mh);
+    ctx.fillStyle = muted ? '#666' : '#aaa';
+    ctx.font = '16px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(muted ? 'SOUND OFF' : 'SOUND ON', mx + mw / 2, my + 23);
+    ctx.textAlign = 'left';
+    this.muteBtn = { x: mx, y: my, w: mw, h: mh };
   }
 
   startGame() {

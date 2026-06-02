@@ -97,6 +97,10 @@ async function init() {
     const pos = getMousePos(e);
 
     if (game.state === 'menu') {
+      if (game.muteBtn && pos.x >= game.muteBtn.x && pos.x <= game.muteBtn.x + game.muteBtn.w && pos.y >= game.muteBtn.y && pos.y <= game.muteBtn.y + game.muteBtn.h) {
+        SoundManager.toggleMute();
+        return;
+      }
       if (game.charButtons) {
         for (const btn of game.charButtons) {
           if (pos.x >= btn.x && pos.x <= btn.x + btn.w && pos.y >= btn.y && pos.y <= btn.y + btn.h) {
