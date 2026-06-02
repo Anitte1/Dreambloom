@@ -20,7 +20,7 @@ const ENEMY_TYPES = [
 const MAX_LIVES = 3;
 const INVULNERABLE_DURATION = 60;
 const COIN_SCORE = 50;
-const COIN_SPAWN_INTERVAL_MS = 3000;
+const COIN_SPAWN_INTERVAL_MS = 1200;
 
 const LIFE_ICON_PATH = 'assets/kenney_ui-pack/PNG/Red/Double/icon_circle.png';
 const STAR_ICON_PATH = 'assets/kenney_ui-pack/PNG/Yellow/Double/star.png';
