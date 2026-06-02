@@ -23,9 +23,10 @@ class Coin {
 }
 
 class Player {
-  constructor(canvasWidth, canvasHeight) {
+  constructor(canvasWidth, canvasHeight, characterId) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
+    this.characterId = characterId || 'Adventurer';
     this.width = 80;
     this.height = 80;
     this.x = canvasWidth / 2 - this.width / 2;
@@ -110,19 +111,21 @@ class Player {
   draw(ctx) {
     if (this.invulnerableTimer > 0 && Math.floor(this.invulnerableTimer / 4) % 2 === 0) return;
 
+    const c = this.characterId;
+    const get = (key) => Assets[c + '_' + key];
     let sprite;
     switch (this.state) {
       case 'hurt':
-        sprite = Assets.playerHurt || Assets.playerStand;
+        sprite = get('hurt') || get('stand');
         break;
       case 'jump':
-        sprite = Assets.playerJump || Assets.playerStand;
+        sprite = get('jump') || get('stand');
         break;
       case 'run':
-        sprite = this.animFrame === 0 ? Assets.playerWalk1 : Assets.playerWalk2;
+        sprite = this.animFrame === 0 ? get('walk1') : get('walk2');
         break;
       default:
-        sprite = Assets.playerStand;
+        sprite = get('stand');
     }
     if (sprite) {
       ctx.drawImage(sprite, this.x, this.y, this.width, this.height);
@@ -134,8 +137,10 @@ class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.player1 = new Player(canvas.width, canvas.height);
-    this.player2 = new Player(canvas.width, canvas.height);
+    this.charIdx1 = 0;
+    this.charIdx2 = 1;
+    this.player1 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx1].id);
+    this.player2 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx2].id);
     this.player2.x = canvas.width / 2 + this.player2.width / 2 + 20;
     this.keysP1 = { left: false, right: false, up: false, down: false };
     this.keysP2 = { left: false, right: false, up: false, down: false };
@@ -337,32 +342,71 @@ class Game {
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
     ctx.fillStyle = '#e74c3c';
-    ctx.font = 'bold 64px monospace';
+    ctx.font = 'bold 56px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText('DUNGEON DODGE', CANVAS_WIDTH / 2, 200);
+    ctx.fillText('DUNGEON DODGE', CANVAS_WIDTH / 2, 100);
 
-    ctx.fillStyle = '#ccc';
-    ctx.font = '20px monospace';
-    const rules = [
-      'Управление: WASD / Стрелки',
-      'W / ↑ — прыжок (рывок вверх)',
-      'Уклоняйся от врагов, собирай звёзды',
-      'У тебя 3 жизни — береги их!',
-    ];
-    rules.forEach((text, i) => {
-      ctx.fillText(text, CANVAS_WIDTH / 2, 300 + i * 36);
-    });
+    ctx.fillStyle = '#888';
+    ctx.font = '18px monospace';
+    ctx.fillText('Выберите персонажей и нажмите PLAY', CANVAS_WIDTH / 2, 140);
+
+    this.charButtons = [];
+    for (let p = 0; p < 2; p++) {
+      const isP1 = p === 0;
+      const label = isP1 ? 'P1 — Стрелки' : 'P2 — WASD';
+      const color = isP1 ? '#4fc3f7' : '#81c784';
+      const idxKey = isP1 ? 'charIdx1' : 'charIdx2';
+      const idx = this[idxKey];
+      const charDef = CHARACTER_TYPES[idx];
+      const baseY = 170 + p * 140;
+
+      ctx.fillStyle = color;
+      ctx.font = 'bold 20px monospace';
+      ctx.fillText(label, CANVAS_WIDTH / 2, baseY);
+
+      const portraitSize = 64;
+      const portraitX = CANVAS_WIDTH / 2 - portraitSize / 2;
+      const portraitY = baseY + 12;
+      const stand = Assets[charDef.id + '_stand'];
+      if (stand) {
+        ctx.drawImage(stand, portraitX, portraitY, portraitSize, portraitSize);
+      }
+
+      ctx.fillStyle = '#fff';
+      ctx.font = '16px monospace';
+      ctx.fillText(charDef.name, CANVAS_WIDTH / 2, portraitY + portraitSize + 18);
+
+      const arrowSize = 36;
+      const arrowY = portraitY + portraitSize / 2 - arrowSize / 2;
+      const leftX = portraitX - 50;
+      const rightX = portraitX + portraitSize + 14;
+
+      ctx.fillStyle = '#555';
+      ctx.fillRect(leftX, arrowY, arrowSize, arrowSize);
+      ctx.fillRect(rightX, arrowY, arrowSize, arrowSize);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 24px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('<', leftX + arrowSize / 2, arrowY + arrowSize - 8);
+      ctx.fillText('>', rightX + arrowSize / 2, arrowY + arrowSize - 8);
+      ctx.textAlign = 'center';
+
+      this.charButtons.push(
+        { player: p, dir: -1, x: leftX, y: arrowY, w: arrowSize, h: arrowSize },
+        { player: p, dir: 1, x: rightX, y: arrowY, w: arrowSize, h: arrowSize }
+      );
+    }
 
     const bx = CANVAS_WIDTH / 2 - 100;
-    const by = 480;
+    const by = 460;
     const bw = 200;
-    const bh = 60;
+    const bh = 56;
     ctx.fillStyle = '#27ae60';
     ctx.fillRect(bx, by, bw, bh);
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 28px monospace';
-    ctx.fillText('PLAY', CANVAS_WIDTH / 2, by + 40);
-    ctx.textAlign = 'left';
+    ctx.textAlign = 'center';
+    ctx.fillText('PLAY', CANVAS_WIDTH / 2, by + 38);
 
     this.playBtn = { x: bx, y: by, w: bw, h: bh };
   }

@@ -18,11 +18,18 @@ function loadImage(src) {
 
 async function init() {
   await SoundManager.init();
-  Assets.playerStand = await loadImage(PLAYER_STAND_PATH);
-  Assets.playerWalk1 = await loadImage(PLAYER_WALK1_PATH);
-  Assets.playerWalk2 = await loadImage(PLAYER_WALK2_PATH);
-  Assets.playerJump = await loadImage(PLAYER_JUMP_PATH);
-  Assets.playerHurt = await loadImage(PLAYER_HURT_PATH);
+
+  for (const ch of CHARACTER_TYPES) {
+    const base = 'assets/kenney_platformer-characters/PNG/' + ch.id + '/Poses/';
+    await Promise.all([
+      loadImage(base + ch.prefix + '_stand.png').then(img => Assets[ch.id + '_stand'] = img),
+      loadImage(base + ch.prefix + '_walk1.png').then(img => Assets[ch.id + '_walk1'] = img),
+      loadImage(base + ch.prefix + '_walk2.png').then(img => Assets[ch.id + '_walk2'] = img),
+      loadImage(base + ch.prefix + '_jump.png').then(img => Assets[ch.id + '_jump'] = img),
+      loadImage(base + ch.prefix + '_hurt.png').then(img => Assets[ch.id + '_hurt'] = img),
+    ]);
+  }
+
   Assets.background = await loadImage(BACKGROUND_PATH);
   Assets.floorTile = await loadImage(FLOOR_TILE_PATH);
 
@@ -72,19 +79,36 @@ async function init() {
     }
   });
 
+  function getMousePos(e) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+      x: (e.clientX - rect.left) * (canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (canvas.height / rect.height),
+    };
+  }
+
   canvas.addEventListener('click', (e) => {
-    if (game.state === 'gameover') {
-      game.restart();
-    } else if (game.state === 'menu' && game.playBtn) {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      const mx = (e.clientX - rect.left) * scaleX;
-      const my = (e.clientY - rect.top) * scaleY;
-      const btn = game.playBtn;
-      if (mx >= btn.x && mx <= btn.x + btn.w && my >= btn.y && my <= btn.y + btn.h) {
+    const pos = getMousePos(e);
+
+    if (game.state === 'menu') {
+      if (game.charButtons) {
+        for (const btn of game.charButtons) {
+          if (pos.x >= btn.x && pos.x <= btn.x + btn.w && pos.y >= btn.y && pos.y <= btn.y + btn.h) {
+            const key = btn.player === 0 ? 'charIdx1' : 'charIdx2';
+            const maxIdx = CHARACTER_TYPES.length - 1;
+            game[key] = (game[key] + btn.dir + maxIdx + 1) % CHARACTER_TYPES.length;
+            const charDef = CHARACTER_TYPES[game[key]];
+            const p = btn.player === 0 ? game.player1 : game.player2;
+            p.characterId = charDef.id;
+            return;
+          }
+        }
+      }
+      if (game.playBtn && pos.x >= game.playBtn.x && pos.x <= game.playBtn.x + game.playBtn.w && pos.y >= game.playBtn.y && pos.y <= game.playBtn.y + game.playBtn.h) {
         game.startGame();
       }
+    } else if (game.state === 'gameover') {
+      game.restart();
     }
   });
 

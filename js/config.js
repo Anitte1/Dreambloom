@@ -6,11 +6,13 @@ const MIN_SPAWN_INTERVAL_MS = 500;
 const DIFFICULTY_STEP_FRAMES = 600;
 const MAX_DIFFICULTY_LEVEL = 10;
 
-const PLAYER_STAND_PATH = 'assets/kenney_platformer-characters/PNG/Adventurer/Poses/adventurer_stand.png';
-const PLAYER_WALK1_PATH = 'assets/kenney_platformer-characters/PNG/Adventurer/Poses/adventurer_walk1.png';
-const PLAYER_WALK2_PATH = 'assets/kenney_platformer-characters/PNG/Adventurer/Poses/adventurer_walk2.png';
-const PLAYER_JUMP_PATH = 'assets/kenney_platformer-characters/PNG/Adventurer/Poses/adventurer_jump.png';
-const PLAYER_HURT_PATH = 'assets/kenney_platformer-characters/PNG/Adventurer/Poses/adventurer_hurt.png';
+const CHARACTER_TYPES = [
+  { id: 'Adventurer', name: 'Adventurer', prefix: 'adventurer', color: '#4fc3f7' },
+  { id: 'Female', name: 'Female', prefix: 'female', color: '#f48fb1' },
+  { id: 'Player', name: 'Player', prefix: 'player', color: '#ce93d8' },
+  { id: 'Soldier', name: 'Soldier', prefix: 'soldier', color: '#ff8a65' },
+  { id: 'Zombie', name: 'Zombie', prefix: 'zombie', color: '#a1887f' },
+];
 const ENEMY_TYPES = [
   { id: 'slime', speed: 2, width: 48, height: 48, path: 'assets/kenney_platformer-art-extended-enemies/Enemy sprites/slime.png', animPath: 'assets/kenney_platformer-art-extended-enemies/Enemy sprites/slime_walk.png' },
   { id: 'ghost', speed: 3, width: 48, height: 56, path: 'assets/kenney_platformer-art-extended-enemies/Enemy sprites/ghost.png', animPath: 'assets/kenney_platformer-art-extended-enemies/Enemy sprites/ghost_normal.png' },
