@@ -102,6 +102,18 @@ async function init() {
         SoundManager.toggleMute();
         return;
       }
+      function checkNameClick(btn) {
+        if (pos.x >= btn.x && pos.x <= btn.x + btn.w && pos.y >= btn.y && pos.y <= btn.y + btn.h) {
+          const newName = prompt('Enter name for ' + btn.player.name + ':', btn.player.name);
+          if (newName && newName.trim().length > 0) {
+            btn.player.name = newName.trim();
+          }
+          return true;
+        }
+        return false;
+      }
+      if (game.nameBtnsP1 && checkNameClick(game.nameBtnsP1)) return;
+      if (game.nameBtnsP2 && checkNameClick(game.nameBtnsP2)) return;
       if (game.charButtons) {
         for (const btn of game.charButtons) {
           if (pos.x >= btn.x && pos.x <= btn.x + btn.w && pos.y >= btn.y && pos.y <= btn.y + btn.h) {

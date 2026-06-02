@@ -23,10 +23,11 @@ class Coin {
 }
 
 class Player {
-  constructor(canvasWidth, canvasHeight, characterId) {
+  constructor(canvasWidth, canvasHeight, characterId, name) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
     this.characterId = characterId || 'Adventurer';
+    this.name = name || 'Player';
     this.width = 80;
     this.height = 80;
     this.x = canvasWidth / 2 - this.width / 2;
@@ -140,8 +141,8 @@ class Game {
     this.charIdx1 = 0;
     this.charIdx2 = 1;
     this.mapIdx = 0;
-    this.player1 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx1].id);
-    this.player2 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx2].id);
+    this.player1 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx1].id, 'Player 1');
+    this.player2 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx2].id, 'Player 2');
     this.player2.x = canvas.width / 2 - this.player2.width / 2 - 150;
     this.player2.y = canvas.height - FLOOR_HEIGHT - this.player2.height / 2 + 5;
     this.keysP1 = { left: false, right: false, up: false, down: false };
@@ -330,8 +331,10 @@ class Game {
       }
     };
 
-    drawPlayerHud(this.player1, 'P1', '#4fc3f7', pad);
-    drawPlayerHud(this.player2, 'P2', '#81c784', CANVAS_WIDTH / 2 + pad);
+    const name1 = this.player1.name.length > 8 ? this.player1.name.slice(0, 8) + '..' : this.player1.name;
+    const name2 = this.player2.name.length > 8 ? this.player2.name.slice(0, 8) + '..' : this.player2.name;
+    drawPlayerHud(this.player1, name1, '#4fc3f7', pad);
+    drawPlayerHud(this.player2, name2, '#81c784', CANVAS_WIDTH / 2 + pad);
 
     ctx.fillStyle = '#ffcc00';
     ctx.font = '14px monospace';
@@ -404,7 +407,20 @@ class Game {
 
       ctx.fillStyle = '#fff';
       ctx.font = '14px monospace';
-      ctx.fillText(charDef.name, px + panelW / 2, portraitY + portraitSize + 16);
+      ctx.fillText(charDef.name, px + panelW / 2, portraitY + portraitSize + 14);
+
+      const pObj = isP1 ? this.player1 : this.player2;
+      const nameLabel = '"' + pObj.name + '"';
+      ctx.fillStyle = '#ffcc00';
+      ctx.font = '13px monospace';
+      ctx.fillText(nameLabel, px + panelW / 2, portraitY + portraitSize + 32);
+      const nameBtnY = portraitY + portraitSize + 18;
+      const nameBtnH = 18;
+      if (!isP1) {
+        this.nameBtnsP2 = { x: px, y: nameBtnY, w: panelW, h: nameBtnH, player: pObj };
+      } else {
+        this.nameBtnsP1 = { x: px, y: nameBtnY, w: panelW, h: nameBtnH, player: pObj };
+      }
 
       const arrowSize = 30;
       const arrowY = portraitY + portraitSize / 2 - arrowSize / 2;
@@ -542,12 +558,12 @@ class Game {
     this.player1.draw(ctx);
     this.player2.draw(ctx);
 
-    ctx.font = 'bold 12px monospace';
+    ctx.font = 'bold 11px monospace';
     ctx.textAlign = 'center';
     ctx.fillStyle = '#4fc3f7';
-    ctx.fillText('P1', this.player1.x + this.player1.width / 2, this.player1.y - 6);
+    ctx.fillText(this.player1.name, this.player1.x + this.player1.width / 2, this.player1.y - 6);
     ctx.fillStyle = '#81c784';
-    ctx.fillText('P2', this.player2.x + this.player2.width / 2, this.player2.y - 6);
+    ctx.fillText(this.player2.name, this.player2.x + this.player2.width / 2, this.player2.y - 6);
 
     for (const e of this.enemies) {
       e.draw(ctx);
@@ -565,10 +581,10 @@ class Game {
       ctx.fillText('GAME OVER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 60);
 
       ctx.fillStyle = '#4fc3f7';
-      ctx.font = '28px monospace';
-      ctx.fillText('P1: ' + this.player1.score, CANVAS_WIDTH / 2 - 120, CANVAS_HEIGHT / 2);
+      ctx.font = '24px monospace';
+      ctx.fillText(this.player1.name + ': ' + this.player1.score, CANVAS_WIDTH / 2 - 140, CANVAS_HEIGHT / 2);
       ctx.fillStyle = '#81c784';
-      ctx.fillText('P2: ' + this.player2.score, CANVAS_WIDTH / 2 + 120, CANVAS_HEIGHT / 2);
+      ctx.fillText(this.player2.name + ': ' + this.player2.score, CANVAS_WIDTH / 2 + 140, CANVAS_HEIGHT / 2);
 
       ctx.font = '20px monospace';
       ctx.fillStyle = '#aaa';
