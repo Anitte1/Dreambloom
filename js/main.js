@@ -56,28 +56,27 @@ async function init() {
   SoundManager.startMusic();
 
   document.addEventListener('keydown', (e) => {
-    const k = e.key;
-    console.log('keydown:', k);
-    if (k === 'ArrowLeft') { e.preventDefault(); game.setKey(1, 'left', true); }
-    else if (k === 'ArrowRight') { e.preventDefault(); game.setKey(1, 'right', true); }
-    else if (k === 'ArrowUp') { e.preventDefault(); game.setKey(1, 'up', true); }
-    else if (k === 'ArrowDown') { e.preventDefault(); game.setKey(1, 'down', true); }
-    else if (k === 'w' || k === 'W') { console.log('→ P2 up'); game.setKey(2, 'up', true); }
-    else if (k === 'a' || k === 'A') { console.log('→ P2 left'); game.setKey(2, 'left', true); }
-    else if (k === 's' || k === 'S') { console.log('→ P2 down'); game.setKey(2, 'down', true); }
-    else if (k === 'd' || k === 'D') { console.log('→ P2 right'); game.setKey(2, 'right', true); }
+    const c = e.code;
+    if (c === 'ArrowLeft') { e.preventDefault(); game.setKey(1, 'left', true); }
+    else if (c === 'ArrowRight') { e.preventDefault(); game.setKey(1, 'right', true); }
+    else if (c === 'ArrowUp') { e.preventDefault(); game.setKey(1, 'up', true); }
+    else if (c === 'ArrowDown') { e.preventDefault(); game.setKey(1, 'down', true); }
+    else if (c === 'KeyW') { game.setKey(2, 'up', true); }
+    else if (c === 'KeyA') { game.setKey(2, 'left', true); }
+    else if (c === 'KeyS') { game.setKey(2, 'down', true); }
+    else if (c === 'KeyD') { game.setKey(2, 'right', true); }
   });
 
   document.addEventListener('keyup', (e) => {
-    const k = e.key;
-    if (k === 'ArrowLeft') { e.preventDefault(); game.setKey(1, 'left', false); }
-    else if (k === 'ArrowRight') { e.preventDefault(); game.setKey(1, 'right', false); }
-    else if (k === 'ArrowUp') { e.preventDefault(); game.setKey(1, 'up', false); }
-    else if (k === 'ArrowDown') { e.preventDefault(); game.setKey(1, 'down', false); }
-    else if (k === 'w' || k === 'W') { game.setKey(2, 'up', false); }
-    else if (k === 'a' || k === 'A') { game.setKey(2, 'left', false); }
-    else if (k === 's' || k === 'S') { game.setKey(2, 'down', false); }
-    else if (k === 'd' || k === 'D') { game.setKey(2, 'right', false); }
+    const c = e.code;
+    if (c === 'ArrowLeft') { e.preventDefault(); game.setKey(1, 'left', false); }
+    else if (c === 'ArrowRight') { e.preventDefault(); game.setKey(1, 'right', false); }
+    else if (c === 'ArrowUp') { e.preventDefault(); game.setKey(1, 'up', false); }
+    else if (c === 'ArrowDown') { e.preventDefault(); game.setKey(1, 'down', false); }
+    else if (c === 'KeyW') { game.setKey(2, 'up', false); }
+    else if (c === 'KeyA') { game.setKey(2, 'left', false); }
+    else if (c === 'KeyS') { game.setKey(2, 'down', false); }
+    else if (c === 'KeyD') { game.setKey(2, 'right', false); }
     if (e.key === 'r' || e.key === 'R') {
       if (game.state === 'gameover') game.restart();
     }
