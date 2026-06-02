@@ -139,6 +139,9 @@ class Game {
     this.ctx = canvas.getContext('2d');
     this.charIdx1 = 0;
     this.charIdx2 = 1;
+    this.charIdx1 = 0;
+    this.charIdx2 = 1;
+    this.mapIdx = 0;
     this.player1 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx1].id);
     this.player2 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx2].id);
     this.player2.x = canvas.width / 2 + this.player2.width / 2 + 20;
@@ -177,8 +180,12 @@ class Game {
   }
 
   generateDecorations() {
+    const map = MAP_TYPES[this.mapIdx];
+    const cloudKeys = map.bgDecos;
     for (let i = 0; i < DECO_COUNT_BG; i++) {
-      const def = BACKGROUND_DECORATIONS[i % BACKGROUND_DECORATIONS.length];
+      const key = cloudKeys[i % cloudKeys.length];
+      const def = CLOUD_DEFS.find(c => c.key === key);
+      if (!def) continue;
       const size = def.minSize + Math.random() * (def.maxSize - def.minSize);
       this.bgDecos.push({
         key: def.key,
@@ -190,8 +197,9 @@ class Game {
     }
 
     const grassTop = CANVAS_HEIGHT - FLOOR_HEIGHT;
+    const floorDecos = map.floorDecos;
     for (let i = 0; i < DECO_COUNT_FLOOR; i++) {
-      const def = FLOOR_DECORATIONS[i % FLOOR_DECORATIONS.length];
+      const def = floorDecos[i % floorDecos.length];
       let x, y, w, h;
       if (def.grow) {
         w = def.size;
@@ -397,6 +405,28 @@ class Game {
       );
     }
 
+    ctx.fillStyle = '#ffcc00';
+    ctx.font = 'bold 18px monospace';
+    ctx.fillText('MAP: ' + MAP_TYPES[this.mapIdx].name, CANVAS_WIDTH / 2, 445);
+
+    const mapArrowSize = 32;
+    const mapArrowY = 430;
+    const mapLeftX = CANVAS_WIDTH / 2 - 90;
+    const mapRightX = CANVAS_WIDTH / 2 + 70;
+    ctx.fillStyle = '#555';
+    ctx.fillRect(mapLeftX, mapArrowY, mapArrowSize, mapArrowSize);
+    ctx.fillRect(mapRightX, mapArrowY, mapArrowSize, mapArrowSize);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 22px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('<', mapLeftX + mapArrowSize / 2, mapArrowY + mapArrowSize - 7);
+    ctx.fillText('>', mapRightX + mapArrowSize / 2, mapArrowY + mapArrowSize - 7);
+
+    this.mapButtons = [
+      { dir: -1, x: mapLeftX, y: mapArrowY, w: mapArrowSize, h: mapArrowSize },
+      { dir: 1, x: mapRightX, y: mapArrowY, w: mapArrowSize, h: mapArrowSize },
+    ];
+
     const bx = CANVAS_WIDTH / 2 - 100;
     const by = 460;
     const bw = 200;
@@ -413,6 +443,9 @@ class Game {
 
   startGame() {
     SoundManager.play('menuClick');
+    const map = MAP_TYPES[this.mapIdx];
+    this.backgroundImage = Assets['bg_' + map.name] || null;
+    this.floorTileImage = Assets['floor_' + map.name] || null;
     this.restart();
     this.state = 'playing';
   }

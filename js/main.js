@@ -30,14 +30,21 @@ async function init() {
     ]);
   }
 
-  Assets.background = await loadImage(BACKGROUND_PATH);
-  Assets.floorTile = await loadImage(FLOOR_TILE_PATH);
+  for (const m of MAP_TYPES) {
+    Assets['bg_' + m.name] = await loadImage(m.background);
+    Assets['floor_' + m.name] = await loadImage(m.floor);
+  }
 
   Assets.lifeIcon = await loadImage(LIFE_ICON_PATH);
   Assets.starIcon = await loadImage(STAR_ICON_PATH);
 
-  for (const d of [...BACKGROUND_DECORATIONS, ...FLOOR_DECORATIONS]) {
-    Assets[d.key] = await loadImage(d.path);
+  const allDecos = {};
+  for (const d of CLOUD_DEFS) allDecos[d.key] = d.path;
+  for (const m of MAP_TYPES) {
+    for (const d of m.floorDecos) allDecos[d.key] = d.path;
+  }
+  for (const [key, path] of Object.entries(allDecos)) {
+    Assets[key] = await loadImage(path);
   }
 
   for (const t of ENEMY_TYPES) {
@@ -100,6 +107,15 @@ async function init() {
             const charDef = CHARACTER_TYPES[game[key]];
             const p = btn.player === 0 ? game.player1 : game.player2;
             p.characterId = charDef.id;
+            return;
+          }
+        }
+      }
+      if (game.mapButtons) {
+        for (const btn of game.mapButtons) {
+          if (pos.x >= btn.x && pos.x <= btn.x + btn.w && pos.y >= btn.y && pos.y <= btn.y + btn.h) {
+            const maxIdx = MAP_TYPES.length - 1;
+            game.mapIdx = (game.mapIdx + btn.dir + maxIdx + 1) % MAP_TYPES.length;
             return;
           }
         }
