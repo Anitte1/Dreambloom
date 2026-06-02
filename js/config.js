@@ -48,6 +48,8 @@ const SOUND_PATHS = {
 const SoundManager = {
   _muted: false,
   _sounds: {},
+  _audioCtx: null,
+  _musicNodes: [],
 
   async init() {
     const entries = Object.entries(SOUND_PATHS);
@@ -69,8 +71,61 @@ const SoundManager = {
     audio.play().catch(() => {});
   },
 
+  startMusic() {
+    try {
+      SoundManager._audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const ctx = SoundManager._audioCtx;
+      const masterGain = ctx.createGain();
+      masterGain.gain.value = 0.08;
+      masterGain.connect(ctx.destination);
+
+      const notes = [55, 65.41, 73.42, 82.41, 98, 110, 130.81];
+      const nodes = [];
+      for (let i = 0; i < notes.length; i++) {
+        const osc = ctx.createOscillator();
+        osc.type = i < 3 ? 'sine' : 'triangle';
+        osc.frequency.value = notes[i];
+        const gain = ctx.createGain();
+        gain.gain.value = 0.15 - i * 0.015;
+        osc.connect(gain);
+        gain.connect(masterGain);
+        osc.start();
+        nodes.push(osc);
+      }
+
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 0.3;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 0.04;
+      lfo.connect(lfoGain);
+      lfoGain.connect(masterGain.gain);
+      lfo.start();
+
+      nodes.push(lfo);
+      SoundManager._musicNodes = nodes;
+    } catch (e) {
+      console.warn('Music failed to start:', e);
+    }
+  },
+
+  stopMusic() {
+    for (const n of SoundManager._musicNodes) {
+      try { n.stop(); } catch (e) {}
+    }
+    SoundManager._musicNodes = [];
+    if (SoundManager._audioCtx) {
+      SoundManager._audioCtx.close().catch(() => {});
+      SoundManager._audioCtx = null;
+    }
+  },
+
   toggleMute() {
     SoundManager._muted = !SoundManager._muted;
+    if (SoundManager._muted) {
+      SoundManager.stopMusic();
+    } else {
+      SoundManager.startMusic();
+    }
     return SoundManager._muted;
   },
 

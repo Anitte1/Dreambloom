@@ -472,25 +472,26 @@ class Game {
     this.playBtn = { x: bx, y: by, w: bw, h: bh };
 
     const muted = SoundManager.isMuted;
-    const mx = CANVAS_WIDTH - 120;
-    const my = by + bh + 20;
-    const mw = 100;
-    const mh = 34;
+    const mx = CANVAS_WIDTH / 2 - 60;
+    const my = by + bh + 22;
+    const mw = 120;
+    const mh = 36;
     ctx.fillStyle = muted ? 'rgba(100,100,100,0.5)' : 'rgba(255,255,255,0.15)';
     ctx.fillRect(mx, my, mw, mh);
     ctx.strokeStyle = muted ? '#666' : '#aaa';
     ctx.lineWidth = 1;
     ctx.strokeRect(mx, my, mw, mh);
     ctx.fillStyle = muted ? '#666' : '#aaa';
-    ctx.font = '16px monospace';
+    ctx.font = 'bold 16px monospace';
     ctx.textAlign = 'center';
-    ctx.fillText(muted ? 'SOUND OFF' : 'SOUND ON', mx + mw / 2, my + 23);
+    ctx.fillText(muted ? '🔇 SOUND OFF' : '🔊 SOUND ON', mx + mw / 2, my + 24);
     ctx.textAlign = 'left';
     this.muteBtn = { x: mx, y: my, w: mw, h: mh };
   }
 
   startGame() {
     SoundManager.play('menuClick');
+    SoundManager.startMusic();
     const map = MAP_TYPES[this.mapIdx];
     this.backgroundImage = Assets['bg_' + map.name] || null;
     this.floorTileImage = Assets['floor_' + map.name] || null;

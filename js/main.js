@@ -53,6 +53,7 @@ async function init() {
   }
 
   const game = new Game(canvas);
+  SoundManager.startMusic();
 
   function handleKey(e, state) {
     const key = e.key;
