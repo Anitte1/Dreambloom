@@ -39,6 +39,7 @@ class Player {
     this.prevUp = false;
     this.lives = MAX_LIVES;
     this.invulnerableTimer = 0;
+    this.score = 0;
   }
 
   reset() {
@@ -51,6 +52,7 @@ class Player {
     this.prevUp = false;
     this.lives = MAX_LIVES;
     this.invulnerableTimer = 0;
+    this.score = 0;
   }
 
   hit() {
@@ -132,8 +134,11 @@ class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.player = new Player(canvas.width, canvas.height);
-    this.keys = { left: false, right: false, up: false, down: false };
+    this.player1 = new Player(canvas.width, canvas.height);
+    this.player2 = new Player(canvas.width, canvas.height);
+    this.player2.x = canvas.width / 2 + this.player2.width / 2 + 20;
+    this.keysP1 = { left: false, right: false, up: false, down: false };
+    this.keysP2 = { left: false, right: false, up: false, down: false };
     this.backgroundImage = null;
     this.floorTileImage = null;
     this.enemies = [];
@@ -199,12 +204,13 @@ class Game {
   }
 
   restart() {
-    this.player.reset();
+    this.player1.reset();
+    this.player2.reset();
+    this.player2.x += 40;
     this.enemies = [];
     this.coins = [];
     this.spawnTimer = 0;
     this.coinSpawnTimer = 0;
-    this.score = 0;
     this.elapsedFrames = 0;
     this.state = 'playing';
     this.bgDecos = [];
@@ -215,7 +221,8 @@ class Game {
   update() {
     if (this.state === 'gameover' || this.state === 'menu') return;
 
-    this.player.update(this.keys);
+    this.player1.update(this.keysP1);
+    this.player2.update(this.keysP2);
     this.elapsedFrames++;
 
     this.spawnTimer++;
@@ -246,35 +253,43 @@ class Game {
       }
     }
 
-    const p = this.player;
-    for (let i = this.enemies.length - 1; i >= 0; i--) {
-      const e = this.enemies[i];
-      if (
-        p.x + 8 < e.x + e.width - 8 &&
-        p.x + p.width - 8 > e.x + 8 &&
-        p.y + 8 < e.y + e.height - 8 &&
-        p.y + p.height - 8 > e.y + 8
-      ) {
-        if (p.hit()) {
-          this.state = 'gameover';
-          SoundManager.play('gameOver');
+    for (const p of [this.player1, this.player2]) {
+      if (p.lives <= 0) continue;
+      for (let i = this.enemies.length - 1; i >= 0; i--) {
+        const e = this.enemies[i];
+        if (
+          p.x + 8 < e.x + e.width - 8 &&
+          p.x + p.width - 8 > e.x + 8 &&
+          p.y + 8 < e.y + e.height - 8 &&
+          p.y + p.height - 8 > e.y + 8
+        ) {
+          if (p.hit()) {
+            if (this.player1.lives <= 0 && this.player2.lives <= 0) {
+              this.state = 'gameover';
+              SoundManager.play('gameOver');
+            }
+          }
+          this.enemies.splice(i, 1);
+          break;
         }
-        this.enemies.splice(i, 1);
-        break;
       }
     }
 
-    for (let i = this.coins.length - 1; i >= 0; i--) {
-      const c = this.coins[i];
-      if (
-        p.x < c.x + c.width &&
-        p.x + p.width > c.x &&
-        p.y < c.y + c.height &&
-        p.y + p.height > c.y
-      ) {
-        this.score++;
-        SoundManager.play('starCollect');
-        this.coins.splice(i, 1);
+    for (const p of [this.player1, this.player2]) {
+      if (p.lives <= 0) continue;
+      for (let i = this.coins.length - 1; i >= 0; i--) {
+        const c = this.coins[i];
+        if (
+          p.x < c.x + c.width &&
+          p.x + p.width > c.x &&
+          p.y < c.y + c.height &&
+          p.y + p.height > c.y
+        ) {
+          p.score++;
+          SoundManager.play('starCollect');
+          this.coins.splice(i, 1);
+          break;
+        }
       }
     }
   }
@@ -282,23 +297,28 @@ class Game {
   drawHud(ctx) {
     const iconSize = 24;
     const pad = 16;
-    let cursorX = pad;
 
-    if (Assets.starIcon) {
-      ctx.drawImage(Assets.starIcon, cursorX, 12, iconSize, iconSize);
-      cursorX += iconSize + 6;
-    }
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 24px monospace';
-    ctx.fillText(this.score, cursorX, 36);
-    cursorX += ctx.measureText(String(this.score)).width + 20;
-
-    if (Assets.lifeIcon) {
-      for (let i = 0; i < this.player.lives; i++) {
-        ctx.drawImage(Assets.lifeIcon, cursorX, 12, iconSize, iconSize);
-        cursorX += iconSize + 4;
+    const drawPlayerHud = (player, label, color, x) => {
+      let cx = x;
+      if (Assets.starIcon) {
+        ctx.drawImage(Assets.starIcon, cx, 12, iconSize, iconSize);
+        cx += iconSize + 6;
       }
-    }
+      ctx.fillStyle = color;
+      ctx.font = 'bold 20px monospace';
+      ctx.fillText(label + ' ' + player.score, cx, 32);
+      cx += ctx.measureText(label + ' ' + player.score).width + 12;
+
+      if (Assets.lifeIcon) {
+        for (let i = 0; i < player.lives; i++) {
+          ctx.drawImage(Assets.lifeIcon, cx, 12, iconSize, iconSize);
+          cx += iconSize + 4;
+        }
+      }
+    };
+
+    drawPlayerHud(this.player1, 'P1', '#4fc3f7', pad);
+    drawPlayerHud(this.player2, 'P2', '#81c784', CANVAS_WIDTH / 2 + pad);
 
     ctx.fillStyle = '#ffcc00';
     ctx.font = '16px monospace';
@@ -393,7 +413,8 @@ class Game {
       c.draw(ctx);
     }
 
-    this.player.draw(ctx);
+    this.player1.draw(ctx);
+    this.player2.draw(ctx);
 
     for (const e of this.enemies) {
       e.draw(ctx);
@@ -408,12 +429,13 @@ class Game {
       ctx.fillStyle = '#e74c3c';
       ctx.font = 'bold 64px monospace';
       ctx.textAlign = 'center';
-      ctx.fillText('GAME OVER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 50);
+      ctx.fillText('GAME OVER', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 60);
 
-      const totalScore = this.score;
-      ctx.fillStyle = '#fff';
-      ctx.font = '32px monospace';
-      ctx.fillText('Score: ' + totalScore, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 20);
+      ctx.fillStyle = '#4fc3f7';
+      ctx.font = '28px monospace';
+      ctx.fillText('P1: ' + this.player1.score, CANVAS_WIDTH / 2 - 120, CANVAS_HEIGHT / 2);
+      ctx.fillStyle = '#81c784';
+      ctx.fillText('P2: ' + this.player2.score, CANVAS_WIDTH / 2 + 120, CANVAS_HEIGHT / 2);
 
       ctx.font = '20px monospace';
       ctx.fillStyle = '#aaa';
@@ -423,7 +445,8 @@ class Game {
     }
   }
 
-  setKey(dir, state) {
-    this.keys[dir] = state;
+  setKey(player, dir, state) {
+    if (player === 1) this.keysP1[dir] = state;
+    else this.keysP2[dir] = state;
   }
 }

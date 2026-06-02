@@ -42,32 +42,25 @@ async function init() {
   game.backgroundImage = Assets.background;
   game.floorTileImage = Assets.floorTile;
 
+  function handleKey(e, state) {
+    switch (e.key) {
+      case 'ArrowLeft': e.preventDefault(); game.setKey(1, 'left', state); break;
+      case 'ArrowRight': e.preventDefault(); game.setKey(1, 'right', state); break;
+      case 'ArrowUp': e.preventDefault(); game.setKey(1, 'up', state); break;
+      case 'ArrowDown': e.preventDefault(); game.setKey(1, 'down', state); break;
+      case 'a': game.setKey(2, 'left', state); break;
+      case 'd': game.setKey(2, 'right', state); break;
+      case 'w': game.setKey(2, 'up', state); break;
+      case 's': game.setKey(2, 'down', state); break;
+    }
+  }
+
   document.addEventListener('keydown', (e) => {
-    switch (e.key) {
-      case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown':
-        e.preventDefault();
-        break;
-    }
-    switch (e.key) {
-      case 'ArrowLeft': case 'a': game.setKey('left', true); break;
-      case 'ArrowRight': case 'd': game.setKey('right', true); break;
-      case 'ArrowUp': case 'w': game.setKey('up', true); break;
-      case 'ArrowDown': case 's': game.setKey('down', true); break;
-    }
+    handleKey(e, true);
   });
 
   document.addEventListener('keyup', (e) => {
-    switch (e.key) {
-      case 'ArrowLeft': case 'ArrowRight': case 'ArrowUp': case 'ArrowDown':
-        e.preventDefault();
-        break;
-    }
-    switch (e.key) {
-      case 'ArrowLeft': case 'a': game.setKey('left', false); break;
-      case 'ArrowRight': case 'd': game.setKey('right', false); break;
-      case 'ArrowUp': case 'w': game.setKey('up', false); break;
-      case 'ArrowDown': case 's': game.setKey('down', false); break;
-    }
+    handleKey(e, false);
     if (e.key === 'r' || e.key === 'R') {
       if (game.state === 'gameover') game.restart();
     }
