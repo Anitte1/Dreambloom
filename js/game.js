@@ -137,7 +137,7 @@ class Game {
     this.coins = [];
     this.spawnTimer = 0;
     this.coinSpawnTimer = 0;
-    this.state = 'playing';
+    this.state = 'menu';
     this.score = 0;
     this.elapsedFrames = 0;
     this.bgDecos = [];
@@ -210,7 +210,7 @@ class Game {
   }
 
   update() {
-    if (this.state === 'gameover') return;
+    if (this.state === 'gameover' || this.state === 'menu') return;
 
     this.player.update(this.keys);
     this.elapsedFrames++;
@@ -302,8 +302,54 @@ class Game {
     ctx.textAlign = 'left';
   }
 
+  drawMenu() {
+    const ctx = this.ctx;
+    ctx.fillStyle = '#1a1a2e';
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+    ctx.fillStyle = '#e74c3c';
+    ctx.font = 'bold 64px monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText('DUNGEON DODGE', CANVAS_WIDTH / 2, 200);
+
+    ctx.fillStyle = '#ccc';
+    ctx.font = '20px monospace';
+    const rules = [
+      'Управление: WASD / Стрелки',
+      'W / ↑ — прыжок (рывок вверх)',
+      'Уклоняйся от врагов, собирай звёзды',
+      'У тебя 3 жизни — береги их!',
+    ];
+    rules.forEach((text, i) => {
+      ctx.fillText(text, CANVAS_WIDTH / 2, 300 + i * 36);
+    });
+
+    const bx = CANVAS_WIDTH / 2 - 100;
+    const by = 480;
+    const bw = 200;
+    const bh = 60;
+    ctx.fillStyle = '#27ae60';
+    ctx.fillRect(bx, by, bw, bh);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 28px monospace';
+    ctx.fillText('PLAY', CANVAS_WIDTH / 2, by + 40);
+    ctx.textAlign = 'left';
+
+    this.playBtn = { x: bx, y: by, w: bw, h: bh };
+  }
+
+  startGame() {
+    this.restart();
+    this.state = 'playing';
+  }
+
   draw() {
     const ctx = this.ctx;
+
+    if (this.state === 'menu') {
+      this.drawMenu();
+      return;
+    }
 
     if (this.backgroundImage) {
       ctx.drawImage(this.backgroundImage, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);

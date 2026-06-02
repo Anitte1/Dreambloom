@@ -70,10 +70,25 @@ async function init() {
     if (e.key === 'r' || e.key === 'R') {
       if (game.state === 'gameover') game.restart();
     }
+    if (e.key === 'Enter' || e.key === ' ') {
+      if (game.state === 'menu') game.startGame();
+    }
   });
 
-  canvas.addEventListener('click', () => {
-    if (game.state === 'gameover') game.restart();
+  canvas.addEventListener('click', (e) => {
+    if (game.state === 'gameover') {
+      game.restart();
+    } else if (game.state === 'menu' && game.playBtn) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const mx = (e.clientX - rect.left) * scaleX;
+      const my = (e.clientY - rect.top) * scaleY;
+      const btn = game.playBtn;
+      if (mx >= btn.x && mx <= btn.x + btn.w && my >= btn.y && my <= btn.y + btn.h) {
+        game.startGame();
+      }
+    }
   });
 
   function gameLoop() {
