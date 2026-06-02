@@ -139,8 +139,6 @@ class Game {
     this.ctx = canvas.getContext('2d');
     this.charIdx1 = 0;
     this.charIdx2 = 1;
-    this.charIdx1 = 0;
-    this.charIdx2 = 1;
     this.mapIdx = 0;
     this.player1 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx1].id);
     this.player2 = new Player(canvas.width, canvas.height, CHARACTER_TYPES[this.charIdx2].id);

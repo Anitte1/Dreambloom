@@ -53,8 +53,6 @@ async function init() {
   }
 
   const game = new Game(canvas);
-  game.backgroundImage = Assets.background;
-  game.floorTileImage = Assets.floorTile;
 
   function handleKey(e, state) {
     switch (e.key) {
