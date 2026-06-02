@@ -55,18 +55,16 @@ async function init() {
   const game = new Game(canvas);
   SoundManager.startMusic();
 
-  const KEY_MAP = {
-    'ArrowLeft':  [1, 'left'], 'ArrowRight': [1, 'right'], 'ArrowUp': [1, 'up'], 'ArrowDown': [1, 'down'],
-    'a': [2, 'left'], 'A': [2, 'left'], 'd': [2, 'right'], 'D': [2, 'right'],
-    'w': [2, 'up'], 'W': [2, 'up'], 's': [2, 'down'], 'S': [2, 'down'],
-  };
-
   function handleKey(e, state) {
-    const mapping = KEY_MAP[e.key];
-    if (!mapping) return;
-    const [player, dir] = mapping;
-    if (player === 1) e.preventDefault();
-    game.setKey(player, dir, state);
+    const k = e.key;
+    if (k === 'ArrowLeft') { e.preventDefault(); game.setKey(1, 'left', state); }
+    else if (k === 'ArrowRight') { e.preventDefault(); game.setKey(1, 'right', state); }
+    else if (k === 'ArrowUp') { e.preventDefault(); game.setKey(1, 'up', state); }
+    else if (k === 'ArrowDown') { e.preventDefault(); game.setKey(1, 'down', state); }
+    else if (k === 'w' || k === 'W') { game.setKey(2, 'up', state); }
+    else if (k === 'a' || k === 'A') { game.setKey(2, 'left', state); }
+    else if (k === 's' || k === 'S') { game.setKey(2, 'down', state); }
+    else if (k === 'd' || k === 'D') { game.setKey(2, 'right', state); }
   }
 
   document.addEventListener('keydown', (e) => {
