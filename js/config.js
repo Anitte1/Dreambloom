@@ -132,6 +132,16 @@ const SoundManager = {
   get isMuted() { return SoundManager._muted; },
 };
 
+const POWERUP_TYPES = [
+  { id: 'shield', color: '#4fc3f7', label: 'S', duration: 300, desc: 'Shield' },
+  { id: 'magnet', color: '#ffeb3b', label: 'M', duration: 300, desc: 'Magnet' },
+  { id: 'slowmo', color: '#ce93d8', label: 'Z', duration: 300, desc: 'Slow-Mo' },
+  { id: 'extralife', color: '#e74c3c', label: '+', duration: 0, desc: 'Extra Life' },
+];
+const POWERUP_SPAWN_INTERVAL_MS = 6000;
+const MAGNET_RANGE = 240;
+const MAGNET_PULL = 6;
+
 const FLOOR_HEIGHT = 80;
 
 const MAP_TYPES = [

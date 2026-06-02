@@ -6,6 +6,7 @@ class Enemy {
     this.x = Math.random() * (CANVAS_WIDTH - this.width);
     this.y = -this.height;
     this.speed = typeDef.speed * speedMultiplier;
+    this.baseSpeed = this.speed;
     this.animFrame = 0;
     this.animTimer = 0;
     this.animSpeed = 15;
